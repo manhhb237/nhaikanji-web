@@ -4,7 +4,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { KanjiHome } from './components/kanji/KanjiHome';
-import { VocabularyCurriculum } from './components/vocabulary/VocabularyCurriculum';
+import { NhaiKanjiVocabHub } from './components/vocabulary/NhaiKanjiVocabHub';
 import { GrammarHome } from './components/grammar/GrammarHome';
 import { KanaAlphabet } from './components/alphabet/KanaAlphabet';
 import { RadicalsBrowser } from './components/kanji/RadicalsBrowser';
@@ -68,7 +68,7 @@ const AppContent: React.FC = () => {
         <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Nhóm 1: Học tập & Chiết tự */}
           {user.activeTab === 'kanji' && <KanjiHome />}
-          {user.activeTab === 'vocab' && <VocabularyCurriculum />}
+          {user.activeTab === 'vocab' && <NhaiKanjiVocabHub />}
           {user.activeTab === 'grammar' && <GrammarHome />}
           {user.activeTab === 'alphabet' && <KanaAlphabet />}
           {user.activeTab === 'radicals' && <RadicalsBrowser />}
