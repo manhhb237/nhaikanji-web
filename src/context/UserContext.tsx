@@ -1,5 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+export type TabType = 
+  | 'kanji' 
+  | 'vocab' 
+  | 'grammar' 
+  | 'flashcard' 
+  | 'shadowing' 
+  | 'typing' 
+  | 'exam' 
+  | 'alphabet' 
+  | 'pomodoro' 
+  | 'dashboard' 
+  | 'practice-sheet' 
+  | 'radicals' 
+  | 'upgrade';
+
 export interface UserState {
   isLoggedIn: boolean;
   name: string;
@@ -7,17 +22,19 @@ export interface UserState {
   plan: 'free' | 'yearly' | 'lifetime';
   aiCredits: number;
   streakDays: number;
+  exp: number;
   learnedKanjiIds: string[];
   favoriteKanjiIds: string[];
-  activeTab: 'kanji' | 'vocab' | 'grammar' | 'radicals' | 'flashcard' | 'practice-sheet' | 'dashboard' | 'upgrade';
+  activeTab: TabType;
   darkMode: boolean;
 }
 
 interface UserContextType {
   user: UserState;
-  setActiveTab: (tab: UserState['activeTab']) => void;
+  setActiveTab: (tab: TabType) => void;
   toggleFavorite: (id: string) => void;
   markAsLearned: (id: string) => void;
+  addExp: (amount: number) => void;
   useAiCredit: (amount?: number) => boolean;
   upgradePlan: (plan: 'yearly' | 'lifetime') => void;
   toggleDarkMode: () => void;
@@ -32,6 +49,7 @@ const DEFAULT_USER: UserState = {
   plan: 'free',
   aiCredits: 50,
   streakDays: 7,
+  exp: 7420,
   learnedKanjiIds: ['k-nhat', 'k-nguyet', 'k-moc'],
   favoriteKanjiIds: ['k-ai', 'k-mong'],
   activeTab: 'kanji',
@@ -45,7 +63,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const saved = localStorage.getItem('nhaikanji_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_USER,
+          ...parsed,
+          exp: parsed.exp ?? DEFAULT_USER.exp,
+          streakDays: parsed.streakDays ?? DEFAULT_USER.streakDays,
+          activeTab: parsed.activeTab ?? DEFAULT_USER.activeTab
+        };
       } catch {
         return DEFAULT_USER;
       }
@@ -62,7 +87,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  const setActiveTab = (activeTab: UserState['activeTab']) => {
+  const setActiveTab = (activeTab: TabType) => {
     setUser(prev => ({ ...prev, activeTab }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -85,9 +110,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return {
         ...prev,
         learnedKanjiIds: [...prev.learnedKanjiIds, id],
+        exp: (prev.exp || 0) + 50,
         streakDays: prev.streakDays + 1
       };
     });
+  };
+
+  const addExp = (amount: number) => {
+    setUser(prev => ({ ...prev, exp: (prev.exp || 0) + amount }));
   };
 
   const useAiCredit = (amount = 10) => {
@@ -124,6 +154,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setActiveTab,
         toggleFavorite,
         markAsLearned,
+        addExp,
         useAiCredit,
         upgradePlan,
         toggleDarkMode,

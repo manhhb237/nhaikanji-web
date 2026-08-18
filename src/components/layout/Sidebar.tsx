@@ -1,5 +1,5 @@
-import React from 'react';
-import { useUser } from '../../context/UserContext';
+import React, { useState } from 'react';
+import { useUser, type TabType } from '../../context/UserContext';
 import { 
   BookOpen, 
   BrainCircuit, 
@@ -9,79 +9,77 @@ import {
   Moon, 
   Sun, 
   Flame,
-  Zap,
-  CheckCircle2,
   Bookmark,
   TrendingUp,
-  FileText
+  FileText,
+  Headphones,
+  Keyboard,
+  Award,
+  Clock,
+  Trophy,
+  Type,
+  type LucideIcon
 } from 'lucide-react';
+import { LeaderboardModal } from '../gamification/LeaderboardModal';
+
+interface NavItem {
+  id: TabType;
+  label: string;
+  sublabel: string;
+  icon: LucideIcon;
+  badge?: string;
+  highlight?: boolean;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
 
 export const Sidebar: React.FC = () => {
   const { user, setActiveTab, toggleDarkMode } = useUser();
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
-  const navItems = [
+  const navSections: NavSection[] = [
     {
-      id: 'kanji' as const,
-      label: 'Hán Tự & Chiết Tự',
-      sublabel: 'Xóa mù qua sơ đồ tư duy',
-      icon: BookOpen,
-      badge: 'N5 - N1'
+      title: 'Học Tập & Chiết Tự',
+      items: [
+        { id: 'kanji', label: 'Hán Tự & Chiết Tự', sublabel: 'Xóa mù qua sơ đồ tư duy', icon: BookOpen, badge: 'N5-N1' },
+        { id: 'vocab', label: 'Từ Vựng Giáo Trình', sublabel: 'Minna, Mimikara, Tango, Shin', icon: Bookmark, badge: 'N5-N1' },
+        { id: 'grammar', label: 'Phân Tích Câu & Ngữ Pháp', sublabel: '文の分析 & Sơ đồ tư duy', icon: BrainCircuit, badge: 'AI' },
+        { id: 'alphabet', label: 'Bảng Chữ Cái Kana', sublabel: 'Hiragana & Katakana', icon: Type },
+        { id: 'radicals', label: '214 Bộ Thủ Khang Hy', sublabel: 'Mẹo nhớ & biến thể', icon: Sparkles },
+      ]
     },
     {
-      id: 'vocab' as const,
-      label: 'Từ Vựng Giáo Trình',
-      sublabel: 'Minna, Mimikara, Tango, Shin',
-      icon: Bookmark,
-      badge: 'N5 - N1'
+      title: 'Luyện Tập & Phản Xạ',
+      items: [
+        { id: 'flashcard', label: 'Luyện Flashcard SRS', sublabel: 'Lật thẻ 3D & Ghép thẻ', icon: Layers, badge: 'SRS' },
+        { id: 'shadowing', label: 'Nghe Đuổi & Chép Chính Tả', sublabel: 'Shadowing & Dictation', icon: Headphones, badge: 'Audio' },
+        { id: 'typing', label: 'Gõ Phím Phản Xạ', sublabel: 'Luyện gõ Romaji/Kana', icon: Keyboard },
+        { id: 'exam', label: 'Thi Thử JLPT Mock Test', sublabel: 'Bấm giờ chuẩn đề thi thật', icon: Award, badge: 'Thi thử' },
+      ]
     },
     {
-      id: 'grammar' as const,
-      label: 'Phân Tích Câu & Ngữ Pháp',
-      sublabel: '文の分析 & Mindmap',
-      icon: BrainCircuit,
-      badge: 'AI Beta'
+      title: 'Công Cụ & Tiến Độ',
+      items: [
+        { id: 'pomodoro', label: 'Phòng Tự Học Pomodoro', sublabel: '25p tập trung + Nhạc Lofi', icon: Clock },
+        { id: 'dashboard', label: 'Tiến Độ & Lộ Trình Học', sublabel: '10 chữ/ngày, % Cấp độ', icon: TrendingUp },
+        { id: 'practice-sheet', label: 'Xuất File Luyện Viết PDF', sublabel: 'In phiếu ô ly chuẩn A4', icon: FileText, badge: 'PDF' },
+      ]
     },
     {
-      id: 'flashcard' as const,
-      label: 'Luyện Tập Flashcard SRS',
-      sublabel: 'Lặp lại ngắt quãng',
-      icon: Layers,
-      badge: 'SRS'
-    },
-    {
-      id: 'dashboard' as const,
-      label: 'Tiến Độ & Lộ Trình Học',
-      sublabel: '10 chữ/ngày, % Cấp độ',
-      icon: TrendingUp,
-      badge: 'Thống kê'
-    },
-    {
-      id: 'practice-sheet' as const,
-      label: 'Xuất File Luyện Viết PDF',
-      sublabel: 'In phiếu ô ly chuẩn Nhật A4',
-      icon: FileText,
-      badge: 'PDF'
-    },
-    {
-      id: 'radicals' as const,
-      label: '214 Bộ Thủ Khang Hy',
-      sublabel: 'Mẹo nhớ & biến thể',
-      icon: Sparkles
-    },
-    {
-      id: 'upgrade' as const,
-      label: 'Nâng Cấp Bản Quyền',
-      sublabel: 'Gói Web & Trọn Đời',
-      icon: Crown,
-      highlight: true,
-      badge: 'HOT'
+      title: 'Bản Quyền',
+      items: [
+        { id: 'upgrade', label: 'Nâng Cấp Bản Quyền', sublabel: 'Gói Web & Trọn Đời', icon: Crown, highlight: true, badge: 'HOT' }
+      ]
     }
   ];
 
   return (
     <aside className="hidden lg:flex flex-col w-72 h-screen sticky top-0 bg-white dark:bg-[#111827] border-r border-slate-200 dark:border-slate-800 p-4 select-none z-30 transition-colors">
       {/* Brand Header */}
-      <div className="flex items-center gap-3 px-2 py-3 mb-3 cursor-pointer" onClick={() => setActiveTab('kanji')}>
+      <div className="flex items-center gap-3 px-2 py-2 mb-2 cursor-pointer" onClick={() => setActiveTab('kanji')}>
         <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20">
           嚼
         </div>
@@ -94,111 +92,81 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* User Quick Stats Widget */}
+      {/* Mascot & Streak Widget */}
       <div 
-        onClick={() => setActiveTab('dashboard')}
-        className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3 mb-3 border border-slate-100 dark:border-slate-800/80 cursor-pointer hover:border-blue-500/40 transition-colors"
+        onClick={() => setIsLeaderboardOpen(true)}
+        className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 rounded-2xl p-2.5 mb-3 border border-amber-500/30 cursor-pointer hover:border-amber-500 transition-all flex items-center justify-between group"
       >
-        <div className="flex items-center justify-between text-xs mb-2">
-          <span className="text-slate-500 dark:text-slate-400">Tiến độ hôm nay</span>
-          <span className="flex items-center text-orange-500 font-bold gap-1">
-            <Flame className="w-3.5 h-3.5 fill-orange-500" />
-            {user.streakDays} ngày streak
-          </span>
-        </div>
-        <div className="grid grid-cols-2 gap-2 text-center">
-          <div className="bg-white dark:bg-slate-900/80 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-            <div className="text-[10px] text-slate-400">Đã thuộc</div>
-            <div className="font-bold text-xs text-slate-800 dark:text-slate-200">{user.learnedKanjiIds.length} Kanji</div>
-          </div>
-          <div className="bg-white dark:bg-slate-900/80 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-            <div className="text-[10px] text-slate-400">AI Credits</div>
-            <div className="font-bold text-xs text-blue-500 flex items-center justify-center gap-0.5">
-              <Zap className="w-3.5 h-3.5 fill-blue-500" />
-              {user.aiCredits}
+        <div className="flex items-center gap-2">
+          <span className="text-2xl group-hover:scale-110 transition-transform">🦊</span>
+          <div>
+            <div className="text-[11px] font-black text-slate-900 dark:text-white flex items-center gap-1">
+              <span>Chil (チル)</span>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500 text-white font-bold">TOP 4</span>
+            </div>
+            <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <Flame className="w-3 h-3 text-orange-500 fill-orange-500" />
+              <span>{(user?.streakDays ?? 7)} ngày streak • {(user?.exp ?? 7420).toLocaleString()} EXP</span>
             </div>
           </div>
         </div>
+        <Trophy className="w-4 h-4 text-amber-500" />
       </div>
 
-      {/* Navigation List */}
-      <nav className="flex-1 space-y-1 overflow-y-auto pr-1">
-        <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-3 py-1">Hệ Thống Học Tập</div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = user.activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all text-left ${
-                isActive
-                  ? item.highlight
-                    ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-lg shadow-orange-500/20'
-                    : 'bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-500/30'
-                  : item.highlight
-                  ? 'bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <div className={`p-1.5 rounded-lg ${
-                  isActive 
-                    ? item.highlight ? 'bg-white/20 text-white' : 'bg-blue-600 text-white' 
-                    : item.highlight ? 'bg-amber-500/20 text-amber-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                }`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="font-semibold text-xs leading-tight">{item.label}</div>
-                  <div className={`text-[10px] ${isActive && item.highlight ? 'text-white/80' : 'text-slate-400'}`}>{item.sublabel}</div>
-                </div>
-              </div>
-              {item.badge && (
-                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
-                  isActive && item.highlight
-                    ? 'bg-white text-orange-600'
-                    : item.highlight
-                    ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white animate-pulse'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                }`}>
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      {/* Navigation Groups */}
+      <nav className="flex-1 space-y-4 overflow-y-auto pr-1">
+        {navSections.map((sec, sIdx) => (
+          <div key={sIdx} className="space-y-1">
+            <div className="text-[9px] font-black tracking-wider text-slate-400 uppercase px-3 py-0.5">
+              {sec.title}
+            </div>
+            {sec.items.map((item) => {
+              const Icon = item.icon;
+              const isActive = user.activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center justify-between p-2 rounded-xl transition-all text-left ${
+                    isActive
+                      ? item.highlight
+                        ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-lg shadow-orange-500/20'
+                        : 'bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-500/30'
+                      : item.highlight
+                      ? 'bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-lg ${
+                      isActive 
+                        ? item.highlight ? 'bg-white/20 text-white' : 'bg-blue-600 text-white' 
+                        : item.highlight ? 'bg-amber-500/20 text-amber-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                    }`}>
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-xs leading-tight">{item.label}</div>
+                      <div className={`text-[9px] ${isActive && item.highlight ? 'text-white/80' : 'text-slate-400'}`}>{item.sublabel}</div>
+                    </div>
+                  </div>
+                  {item.badge && (
+                    <span className={`text-[8px] font-bold px-1.5 py-0.2 rounded-full ${
+                      isActive && item.highlight
+                        ? 'bg-white text-orange-600'
+                        : item.highlight
+                        ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white animate-pulse'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </nav>
-
-      {/* Upgrade Callout Card */}
-      {user.plan === 'free' && (
-        <div className="my-2 p-3 rounded-2xl bg-gradient-to-br from-indigo-900/80 via-purple-900/60 to-slate-900 text-white border border-indigo-500/30 shadow-xl relative overflow-hidden">
-          <div className="flex items-center gap-2 mb-1">
-            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-            <span className="font-bold text-[11px] uppercase tracking-wider text-amber-300">Gói Pro Trọn Đời</span>
-          </div>
-          <p className="text-[11px] text-slate-300 mb-2 leading-relaxed">
-            Mở khóa 2.500+ Kanji, trọn bộ giáo trình N5-N1 và 20.000 AI Credits.
-          </p>
-          <button
-            onClick={() => setActiveTab('upgrade')}
-            className="w-full py-1.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95 flex items-center justify-center gap-1.5"
-          >
-            <span>Nâng cấp ngay</span>
-            <Sparkles className="w-3 h-3" />
-          </button>
-        </div>
-      )}
-
-      {user.plan !== 'free' && (
-        <div className="my-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-          <div className="text-xs">
-            <div className="font-bold">{user.plan === 'lifetime' ? 'Gói Pro Trọn Đời' : 'Gói 1 Năm'}</div>
-            <div className="text-[10px] opacity-80">Đầy đủ quyền lợi Pro</div>
-          </div>
-        </div>
-      )}
 
       {/* Footer / Theme Toggle */}
       <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
@@ -219,8 +187,14 @@ export const Sidebar: React.FC = () => {
           )}
         </button>
 
-        <span className="text-[10px] text-slate-400 font-medium">v2.5.0</span>
+        <span className="text-[10px] text-slate-400 font-medium">v3.0.0 Pro</span>
       </div>
+
+      {/* Leaderboard Modal */}
+      <LeaderboardModal
+        isOpen={isLeaderboardOpen}
+        onClose={() => setIsLeaderboardOpen(false)}
+      />
     </aside>
   );
 };
