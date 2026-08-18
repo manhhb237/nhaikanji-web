@@ -9,7 +9,7 @@ export interface UserState {
   streakDays: number;
   learnedKanjiIds: string[];
   favoriteKanjiIds: string[];
-  activeTab: 'kanji' | 'grammar' | 'radicals' | 'flashcard' | 'upgrade';
+  activeTab: 'kanji' | 'vocab' | 'grammar' | 'radicals' | 'flashcard' | 'practice-sheet' | 'dashboard' | 'upgrade';
   darkMode: boolean;
 }
 

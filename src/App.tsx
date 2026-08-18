@@ -4,8 +4,11 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { KanjiHome } from './components/kanji/KanjiHome';
+import { VocabularyCurriculum } from './components/vocabulary/VocabularyCurriculum';
 import { GrammarHome } from './components/grammar/GrammarHome';
 import { SRSFlashcard } from './components/practice/SRSFlashcard';
+import { StudyProgressDashboard } from './components/dashboard/StudyProgressDashboard';
+import { KanjiPracticeSheet } from './components/tools/KanjiPracticeSheet';
 import { RadicalsBrowser } from './components/kanji/RadicalsBrowser';
 import { UpgradePage } from './components/upgrade/UpgradePage';
 import { KANJI_DATA } from './data/kanjiData';
@@ -59,8 +62,11 @@ const AppContent: React.FC = () => {
         {/* Dynamic Page Views */}
         <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {user.activeTab === 'kanji' && <KanjiHome />}
+          {user.activeTab === 'vocab' && <VocabularyCurriculum />}
           {user.activeTab === 'grammar' && <GrammarHome />}
           {user.activeTab === 'flashcard' && <SRSFlashcard />}
+          {user.activeTab === 'dashboard' && <StudyProgressDashboard />}
+          {user.activeTab === 'practice-sheet' && <KanjiPracticeSheet />}
           {user.activeTab === 'radicals' && <RadicalsBrowser />}
           {user.activeTab === 'upgrade' && <UpgradePage />}
         </main>

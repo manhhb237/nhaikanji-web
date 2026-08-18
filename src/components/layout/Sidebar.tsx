@@ -10,7 +10,10 @@ import {
   Sun, 
   Flame,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  Bookmark,
+  TrendingUp,
+  FileText
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -22,6 +25,13 @@ export const Sidebar: React.FC = () => {
       label: 'Hán Tự & Chiết Tự',
       sublabel: 'Xóa mù qua sơ đồ tư duy',
       icon: BookOpen,
+      badge: 'N5 - N1'
+    },
+    {
+      id: 'vocab' as const,
+      label: 'Từ Vựng Giáo Trình',
+      sublabel: 'Minna, Mimikara, Tango, Shin',
+      icon: Bookmark,
       badge: 'N5 - N1'
     },
     {
@@ -37,6 +47,20 @@ export const Sidebar: React.FC = () => {
       sublabel: 'Lặp lại ngắt quãng',
       icon: Layers,
       badge: 'SRS'
+    },
+    {
+      id: 'dashboard' as const,
+      label: 'Tiến Độ & Lộ Trình Học',
+      sublabel: '10 chữ/ngày, % Cấp độ',
+      icon: TrendingUp,
+      badge: 'Thống kê'
+    },
+    {
+      id: 'practice-sheet' as const,
+      label: 'Xuất File Luyện Viết PDF',
+      sublabel: 'In phiếu ô ly chuẩn Nhật A4',
+      icon: FileText,
+      badge: 'PDF'
     },
     {
       id: 'radicals' as const,
@@ -57,7 +81,7 @@ export const Sidebar: React.FC = () => {
   return (
     <aside className="hidden lg:flex flex-col w-72 h-screen sticky top-0 bg-white dark:bg-[#111827] border-r border-slate-200 dark:border-slate-800 p-4 select-none z-30 transition-colors">
       {/* Brand Header */}
-      <div className="flex items-center gap-3 px-2 py-3 mb-4 cursor-pointer" onClick={() => setActiveTab('kanji')}>
+      <div className="flex items-center gap-3 px-2 py-3 mb-3 cursor-pointer" onClick={() => setActiveTab('kanji')}>
         <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20">
           嚼
         </div>
@@ -71,7 +95,10 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* User Quick Stats Widget */}
-      <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3 mb-4 border border-slate-100 dark:border-slate-800/80">
+      <div 
+        onClick={() => setActiveTab('dashboard')}
+        className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3 mb-3 border border-slate-100 dark:border-slate-800/80 cursor-pointer hover:border-blue-500/40 transition-colors"
+      >
         <div className="flex items-center justify-between text-xs mb-2">
           <span className="text-slate-500 dark:text-slate-400">Tiến độ hôm nay</span>
           <span className="flex items-center text-orange-500 font-bold gap-1">
@@ -81,12 +108,12 @@ export const Sidebar: React.FC = () => {
         </div>
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="bg-white dark:bg-slate-900/80 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-            <div className="text-xs text-slate-400">Đã thuộc</div>
-            <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{user.learnedKanjiIds.length} chữ</div>
+            <div className="text-[10px] text-slate-400">Đã thuộc</div>
+            <div className="font-bold text-xs text-slate-800 dark:text-slate-200">{user.learnedKanjiIds.length} Kanji</div>
           </div>
           <div className="bg-white dark:bg-slate-900/80 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-            <div className="text-xs text-slate-400">AI Credits</div>
-            <div className="font-bold text-sm text-blue-500 flex items-center justify-center gap-0.5">
+            <div className="text-[10px] text-slate-400">AI Credits</div>
+            <div className="font-bold text-xs text-blue-500 flex items-center justify-center gap-0.5">
               <Zap className="w-3.5 h-3.5 fill-blue-500" />
               {user.aiCredits}
             </div>
@@ -95,8 +122,8 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Navigation List */}
-      <nav className="flex-1 space-y-1.5 overflow-y-auto pr-1">
-        <div className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase px-3 py-1">Menu Học Tập</div>
+      <nav className="flex-1 space-y-1 overflow-y-auto pr-1">
+        <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-3 py-1">Hệ Thống Học Tập</div>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = user.activeTab === item.id;
@@ -104,7 +131,7 @@ export const Sidebar: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between p-3 rounded-xl transition-all text-left ${
+              className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all text-left ${
                 isActive
                   ? item.highlight
                     ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-lg shadow-orange-500/20'
@@ -114,8 +141,8 @@ export const Sidebar: React.FC = () => {
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${
+              <div className="flex items-center gap-2.5">
+                <div className={`p-1.5 rounded-lg ${
                   isActive 
                     ? item.highlight ? 'bg-white/20 text-white' : 'bg-blue-600 text-white' 
                     : item.highlight ? 'bg-amber-500/20 text-amber-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
@@ -123,12 +150,12 @@ export const Sidebar: React.FC = () => {
                   <Icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="font-semibold text-sm leading-tight">{item.label}</div>
-                  <div className={`text-[11px] ${isActive && item.highlight ? 'text-white/80' : 'text-slate-400'}`}>{item.sublabel}</div>
+                  <div className="font-semibold text-xs leading-tight">{item.label}</div>
+                  <div className={`text-[10px] ${isActive && item.highlight ? 'text-white/80' : 'text-slate-400'}`}>{item.sublabel}</div>
                 </div>
               </div>
               {item.badge && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
                   isActive && item.highlight
                     ? 'bg-white text-orange-600'
                     : item.highlight
@@ -145,50 +172,49 @@ export const Sidebar: React.FC = () => {
 
       {/* Upgrade Callout Card */}
       {user.plan === 'free' && (
-        <div className="my-3 p-3.5 rounded-2xl bg-gradient-to-br from-indigo-900/80 via-purple-900/60 to-slate-900 text-white border border-indigo-500/30 shadow-xl relative overflow-hidden">
-          <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-indigo-500/20 rounded-full blur-xl" />
-          <div className="flex items-center gap-2 mb-1.5">
-            <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span className="font-bold text-xs uppercase tracking-wider text-amber-300">Gói Pro Trọn Đời</span>
+        <div className="my-2 p-3 rounded-2xl bg-gradient-to-br from-indigo-900/80 via-purple-900/60 to-slate-900 text-white border border-indigo-500/30 shadow-xl relative overflow-hidden">
+          <div className="flex items-center gap-2 mb-1">
+            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <span className="font-bold text-[11px] uppercase tracking-wider text-amber-300">Gói Pro Trọn Đời</span>
           </div>
-          <p className="text-xs text-slate-300 mb-3 leading-relaxed">
-            Mở khóa 2.500+ Kanji chiết tự và AI phân tích ngữ cảnh không giới hạn.
+          <p className="text-[11px] text-slate-300 mb-2 leading-relaxed">
+            Mở khóa 2.500+ Kanji, trọn bộ giáo trình N5-N1 và 20.000 AI Credits.
           </p>
           <button
             onClick={() => setActiveTab('upgrade')}
-            className="w-full py-2 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95 flex items-center justify-center gap-1.5"
+            className="w-full py-1.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95 flex items-center justify-center gap-1.5"
           >
             <span>Nâng cấp ngay</span>
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3 h-3" />
           </button>
         </div>
       )}
 
       {user.plan !== 'free' && (
-        <div className="my-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center gap-2.5">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+        <div className="my-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
           <div className="text-xs">
-            <div className="font-bold">Đã Kích Hoạt {user.plan === 'lifetime' ? 'Trọn Đời' : 'Gói 1 Năm'}</div>
-            <div className="text-[11px] opacity-80">Đầy đủ quyền lợi Pro</div>
+            <div className="font-bold">{user.plan === 'lifetime' ? 'Gói Pro Trọn Đời' : 'Gói 1 Năm'}</div>
+            <div className="text-[10px] opacity-80">Đầy đủ quyền lợi Pro</div>
           </div>
         </div>
       )}
 
       {/* Footer / Theme Toggle */}
-      <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <button
           onClick={toggleDarkMode}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           {user.darkMode ? (
             <>
-              <Sun className="w-4 h-4 text-amber-400" />
-              <span>Giao diện sáng</span>
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span>Sáng</span>
             </>
           ) : (
             <>
-              <Moon className="w-4 h-4 text-slate-600" />
-              <span>Giao diện tối</span>
+              <Moon className="w-3.5 h-3.5 text-slate-600" />
+              <span>Tối</span>
             </>
           )}
         </button>
