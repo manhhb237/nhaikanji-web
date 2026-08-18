@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    --bg-primary: #0b0f19;
+    --bg-secondary: #111827;
+    --bg-tertiary: #1f2937;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --card-shadow: 0 4px 25px -2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* Glassmorphism effects */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass-panel {
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* 3D Flip Card for SRS */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s infinite;
+}
+
+/* Stroke drawing grid */
+.kanji-grid {
+  background-image: linear-gradient(to right, rgba(148, 163, 184, 0.15) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(148, 163, 184, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
