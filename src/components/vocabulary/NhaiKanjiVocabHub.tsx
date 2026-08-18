@@ -25,14 +25,38 @@ import {
   Languages, 
   ChevronLeft, 
   ChevronRight,
-  FolderOpen
+  FolderOpen,
+  Send
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useUser } from '../../context/UserContext';
 
 type VocabViewStage = 'curriculum-select' | 'unit-select' | 'unit-study';
 type StudyMode = 'flashcard' | 'quiz' | 'cram' | 'translate' | 'shadowing';
 
+// Pitch Accent Formatter Helper
+const renderPitchAccent = (reading: string, pitchPattern?: string) => {
+  if (!pitchPattern || !pitchPattern.includes('[')) {
+    return <span>{reading}</span>;
+  }
+  // Parse format like だ[んせい]
+  const match = pitchPattern.match(/^(.*?)\[(.*?)\](.*)$/);
+  if (!match) return <span>{reading}</span>;
+
+  const [_, before, high, after] = match;
+  return (
+    <span className="inline-flex items-baseline font-japanese">
+      {before && <span className="text-slate-400">{before}</span>}
+      <span className="border-t-2 border-r-2 border-amber-500 text-slate-100 font-bold px-0.5 pt-0.5">
+        {high}
+      </span>
+      {after && <span className="text-slate-400">{after}</span>}
+    </span>
+  );
+};
+
 export const NhaiKanjiVocabHub: React.FC = () => {
+  const { setActiveTab } = useUser();
   const [stage, setStage] = useState<VocabViewStage>('curriculum-select');
   const [selectedCurriculumId, setSelectedCurriculumId] = useState<string>('mimikara-n3');
   const [selectedUnit, setSelectedUnit] = useState<MimikaraUnit>(MIMIKARA_N3_UNITS[0]);
@@ -40,8 +64,11 @@ export const NhaiKanjiVocabHub: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [activeMode, setActiveMode] = useState<StudyMode>('flashcard');
   const [modeType, setModeType] = useState<'single' | 'example'>('single');
+  const [flipDirection, setFlipDirection] = useState<'JP_VI' | 'VI_JP'>('JP_VI');
   const [favoriteWordIds, setFavoriteWordIds] = useState<string[]>([]);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
 
   const unitWords = MIMIKARA_N3_WORDS.filter(w => w.unit === selectedUnit.id);
   const currentWord = unitWords[currentWordIndex] || unitWords[0];
@@ -61,6 +88,9 @@ export const NhaiKanjiVocabHub: React.FC = () => {
       prev.includes(id) ? prev.filter(w => w !== id) : [...prev, id]
     );
   };
+
+  const [quizScore, setQuizScore] = useState(0);
+  const [selectedQuizChoice, setSelectedQuizChoice] = useState<string | null>(null);
 
   // Keyboard shortcut support: Space (flip), Z (know), X (don't know), R (audio)
   useEffect(() => {
@@ -100,6 +130,13 @@ export const NhaiKanjiVocabHub: React.FC = () => {
     }
   };
 
+  const handleSendFeedback = () => {
+    if (!feedbackText.trim()) return;
+    alert('Cảm ơn bạn đã gửi đóng góp phản hồi về từ vựng này!');
+    setFeedbackText('');
+    setIsFeedbackOpen(false);
+  };
+
   // ================= STAGE 1: CURRICULUM SELECTOR (Screenshot 1) =================
   if (stage === 'curriculum-select') {
     return (
@@ -112,7 +149,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
             <span className="text-xs text-slate-400 font-medium">日本語能力試験 N5</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Tango N5 */}
             <div className="p-6 rounded-2xl bg-[#1a1f2c] border-2 border-amber-400 text-center space-y-2 cursor-pointer hover:scale-[1.01] transition-transform shadow-lg shadow-amber-500/10">
               <div className="text-xs text-slate-400 font-japanese">はじめての日本語能力試験</div>
               <div className="text-3xl font-black text-white">N5</div>
@@ -120,7 +156,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
               <div className="text-xs text-slate-400">dành cho Kỳ thi Năng lực Nhật ngữ N5</div>
             </div>
 
-            {/* Minna N5 */}
             <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-800 to-teal-800 text-center space-y-2 cursor-pointer hover:scale-[1.01] transition-transform shadow-lg shadow-emerald-500/10">
               <div className="text-xs text-emerald-200 font-japanese">みんなの日本語 初級Ⅰ 第2版</div>
               <div className="text-3xl font-black text-white">N5</div>
@@ -138,7 +173,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
             <span className="text-xs text-slate-400 font-medium">日本語能力試験 N4</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Tango N4 */}
             <div className="p-6 rounded-2xl bg-[#1a1f2c] border-2 border-purple-500 text-center space-y-2 cursor-pointer hover:scale-[1.01] transition-transform shadow-lg shadow-purple-500/10">
               <div className="text-xs text-slate-400 font-japanese">はじめての日本語能力試験</div>
               <div className="text-3xl font-black text-white">N4</div>
@@ -146,7 +180,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
               <div className="text-xs text-slate-400">dành cho Kỳ thi Năng lực Nhật ngữ N4</div>
             </div>
 
-            {/* Minna N4 */}
             <div className="p-6 rounded-2xl bg-gradient-to-r from-teal-800 to-emerald-700 text-center space-y-2 cursor-pointer hover:scale-[1.01] transition-transform shadow-lg shadow-teal-500/10">
               <div className="text-xs text-teal-200 font-japanese">みんなの日本語 初級Ⅱ 第2版</div>
               <div className="text-3xl font-black text-white">N4</div>
@@ -164,7 +197,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
             <span className="text-xs text-slate-400 font-medium">日本語能力試験 N3</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Tango N3 */}
             <div 
               onClick={() => {
                 setSelectedCurriculumId('tango-n3');
@@ -178,7 +210,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
               <div className="text-xs text-slate-400">dành cho Kỳ thi Năng lực Nhật ngữ N3</div>
             </div>
 
-            {/* Mimikara N3 */}
             <div 
               onClick={() => {
                 setSelectedCurriculumId('mimikara-n3');
@@ -228,7 +259,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
   if (stage === 'unit-select') {
     return (
       <div className="space-y-6 max-w-5xl mx-auto py-2">
-        {/* Back Button */}
         <button
           onClick={() => setStage('curriculum-select')}
           className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
@@ -237,7 +267,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
           <span>Quay lại</span>
         </button>
 
-        {/* Title */}
         <div>
           <h2 className="text-2xl sm:text-3xl font-black text-white">
             {selectedCurriculumId === 'mimikara-n3' ? 'Mimikara N3' : 'Tango N3'}
@@ -245,7 +274,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
           <p className="text-xs text-slate-400 mt-1">15 bài học</p>
         </div>
 
-        {/* Progress Bar Card */}
         <div className="p-5 rounded-2xl bg-[#161c28] border border-slate-800 space-y-2">
           <div className="flex items-center justify-between text-xs font-bold text-slate-300">
             <span>Tiến độ học</span>
@@ -259,7 +287,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
           </div>
         </div>
 
-        {/* 2-Column Unit Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {MIMIKARA_N3_UNITS.map(unit => (
             <div
@@ -298,7 +325,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
           ))}
         </div>
 
-        {/* Bottom Review Button */}
         <div className="pt-2 text-center">
           <button className="w-full py-3 rounded-xl border border-dashed border-blue-500/60 hover:bg-blue-500/10 text-blue-400 font-bold text-xs flex items-center justify-center gap-2 transition-colors">
             <FolderOpen className="w-4 h-4" />
@@ -327,94 +353,177 @@ export const NhaiKanjiVocabHub: React.FC = () => {
         </h3>
 
         <div className="flex items-center gap-3">
-          <button className="text-slate-400 hover:text-white flex items-center gap-1">
+          <button 
+            onClick={() => setIsFeedbackOpen(true)}
+            className="text-slate-400 hover:text-white flex items-center gap-1"
+          >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Góp ý sửa lỗi</span>
           </button>
-          <button className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-bold">
+          <button 
+            onClick={() => setActiveTab('practice-sheet')}
+            className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-bold"
+          >
             <FileText className="w-3.5 h-3.5" />
             <span>Tạo file luyện viết</span>
           </button>
         </div>
       </div>
 
-      {/* Main Interactive Flashcard Canvas (Screenshot 3) */}
-      <div className="relative rounded-3xl bg-[#1d263b] border border-slate-700/80 p-8 sm:p-12 text-center min-h-[340px] flex flex-col justify-between shadow-2xl overflow-hidden select-none">
-        {/* Top Card Controls */}
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-slate-400 uppercase">
-            {currentWord?.hanViet}
-          </span>
-          <button
-            onClick={() => currentWord && toggleFavorite(currentWord.id)}
-            className="text-slate-400 hover:text-amber-400 transition-colors"
+      {/* Main Interactive Stage for Selected Learning Mode */}
+      {activeMode === 'flashcard' && (
+        <div className="relative rounded-3xl bg-[#1d263b] border border-slate-700/80 p-8 sm:p-12 text-center min-h-[340px] flex flex-col justify-between shadow-2xl overflow-hidden select-none">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase">
+              {currentWord?.hanViet}
+            </span>
+            <button
+              onClick={() => currentWord && toggleFavorite(currentWord.id)}
+              className="text-slate-400 hover:text-amber-400 transition-colors"
+            >
+              <Star className={`w-5 h-5 ${currentWord && favoriteWordIds.includes(currentWord.id) ? 'fill-amber-400 text-amber-400' : ''}`} />
+            </button>
+          </div>
+
+          <div 
+            onClick={() => setIsFlipped(!isFlipped)}
+            className="py-8 cursor-pointer space-y-3"
           >
-            <Star className={`w-5 h-5 ${currentWord && favoriteWordIds.includes(currentWord.id) ? 'fill-amber-400 text-amber-400' : ''}`} />
+            {(!isFlipped && flipDirection === 'JP_VI') || (isFlipped && flipDirection === 'VI_JP') ? (
+              <>
+                <div className="text-6xl sm:text-7xl font-black font-japanese text-white tracking-tight">
+                  {currentWord?.word}
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    currentWord && speak(currentWord.word);
+                  }}
+                  className="inline-flex items-center justify-center p-2 rounded-full bg-slate-700/50 hover:bg-slate-700 text-slate-300 transition-colors"
+                >
+                  <Volume2 className="w-5 h-5" />
+                </button>
+              </>
+            ) : (
+              <div className="space-y-2 animate-in fade-in">
+                <div className="text-3xl font-black font-japanese text-blue-400">
+                  {currentWord?.reading}
+                </div>
+                <div className="text-xl font-extrabold text-white">
+                  {currentWord?.meaning}
+                </div>
+                <div className="text-xs text-amber-400 font-bold">
+                  Hán Việt: {currentWord?.hanViet}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handlePrevWord}
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button
+            onClick={handleNextWord}
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          <div className="text-[10px] text-slate-400/90 pt-3 border-t border-slate-700/50">
+            Phím tắt: <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">Space</kbd> lật &nbsp;
+            <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">Z</kbd> biết &nbsp;
+            <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">X</kbd> chưa biết &nbsp;
+            <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">C</kbd> thêm deck &nbsp;
+            <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">R</kbd> nghe audio
+          </div>
+        </div>
+      )}
+
+      {/* Mode 2: Quiz */}
+      {activeMode === 'quiz' && currentWord && (
+        <div className="p-8 rounded-3xl bg-[#1d263b] border border-slate-700 text-center space-y-6">
+          <div className="text-xs text-slate-400 font-bold">
+            Câu hỏi {currentWordIndex + 1} / {unitWords.length} (Điểm: {quizScore})
+          </div>
+          <div className="text-5xl font-black font-japanese text-white">
+            {currentWord.word}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto pt-2">
+            {[currentWord.meaning, 'Ý nghĩa khác A', 'Ý nghĩa khác B', 'Ý nghĩa khác C'].sort().map((opt, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  setSelectedQuizChoice(opt);
+                  if (opt === currentWord.meaning) {
+                    setQuizScore(s => s + 1);
+                  }
+                  setTimeout(handleNextWord, 600);
+                }}
+                className={`p-3.5 rounded-2xl font-bold text-xs transition-colors ${
+                  selectedQuizChoice === opt
+                    ? opt === currentWord.meaning
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-rose-600 text-white'
+                    : 'bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mode 3: Cramming (Nhồi nhét) */}
+      {activeMode === 'cram' && currentWord && (
+        <div className="p-8 rounded-3xl bg-[#1d263b] border border-slate-700 text-center space-y-4">
+          <div className="text-xs text-amber-400 font-bold">Chế độ Nhồi Nhét Tốc Độ Cao</div>
+          <div className="text-6xl font-black font-japanese text-white">{currentWord.word}</div>
+          <div className="text-xl text-blue-400 font-bold">{currentWord.reading} - {currentWord.meaning}</div>
+          <button
+            onClick={handleNextWord}
+            className="px-8 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs shadow-md"
+          >
+            Từ Tiếp Theo &rarr;
           </button>
         </div>
+      )}
 
-        {/* Center Flashcard Word Display */}
-        <div 
-          onClick={() => setIsFlipped(!isFlipped)}
-          className="py-8 cursor-pointer space-y-3"
-        >
-          {!isFlipped ? (
-            <>
-              <div className="text-6xl sm:text-7xl font-black font-japanese text-white tracking-tight">
-                {currentWord?.word}
-              </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  currentWord && speak(currentWord.word);
-                }}
-                className="inline-flex items-center justify-center p-2 rounded-full bg-slate-700/50 hover:bg-slate-700 text-slate-300 transition-colors"
-              >
-                <Volume2 className="w-5 h-5" />
-              </button>
-            </>
-          ) : (
-            <div className="space-y-2 animate-in fade-in">
-              <div className="text-3xl font-black font-japanese text-blue-400">
-                {currentWord?.reading}
-              </div>
-              <div className="text-xl font-extrabold text-white">
-                {currentWord?.meaning}
-              </div>
-              <div className="text-xs text-amber-400 font-bold">
-                Hán Việt: {currentWord?.hanViet}
-              </div>
-            </div>
-          )}
+      {/* Mode 4: Translate */}
+      {activeMode === 'translate' && currentWord && (
+        <div className="p-8 rounded-3xl bg-[#1d263b] border border-slate-700 text-center space-y-4">
+          <div className="text-xs text-slate-400 font-bold">Luyện Dịch Câu Ví Dụ</div>
+          <div className="text-2xl font-bold font-japanese text-white">{currentWord.exampleSentence.japanese}</div>
+          <div className="text-sm text-slate-400">{currentWord.exampleSentence.vietnamese}</div>
+          <button
+            onClick={handleNextWord}
+            className="px-6 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs"
+          >
+            Câu Kế Tiếp
+          </button>
         </div>
+      )}
 
-        {/* Prev / Next Chevrons on Card */}
-        <button
-          onClick={handlePrevWord}
-          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          onClick={handleNextWord}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-
-        {/* Bottom Keyboard Shortcuts Tooltip */}
-        <div className="text-[10px] text-slate-400/90 pt-3 border-t border-slate-700/50">
-          Phím tắt: <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">Space</kbd> lật &nbsp;
-          <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">Z</kbd> biết &nbsp;
-          <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">X</kbd> chưa biết &nbsp;
-          <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">C</kbd> thêm deck &nbsp;
-          <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">R</kbd> nghe audio
+      {/* Mode 5: Shadowing */}
+      {activeMode === 'shadowing' && currentWord && (
+        <div className="p-8 rounded-3xl bg-[#1d263b] border border-slate-700 text-center space-y-4">
+          <div className="text-xs text-teal-400 font-bold">Luyện Nghe Đuổi (Shadowing)</div>
+          <div className="text-3xl font-black font-japanese text-white">{currentWord.exampleSentence.japanese}</div>
+          <div className="text-xs text-slate-400">{currentWord.exampleSentence.vietnamese}</div>
+          <button
+            onClick={() => speak(currentWord.exampleSentence.japanese)}
+            className="p-4 rounded-full bg-teal-600 text-white shadow-xl hover:scale-105 transition-transform"
+          >
+            <Volume2 className="w-6 h-6" />
+          </button>
         </div>
-      </div>
+      )}
 
       {/* Control Bar Below Card (Screenshot 3) */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#161c28] border border-slate-800 text-xs">
-        {/* Toggle Mode: Từ đơn / Ví dụ */}
         <div className="flex items-center bg-slate-800 p-1 rounded-xl">
           <button
             onClick={() => setModeType('single')}
@@ -434,7 +543,6 @@ export const NhaiKanjiVocabHub: React.FC = () => {
           </button>
         </div>
 
-        {/* Word Counter & Known/Unknown actions */}
         <div className="flex items-center gap-3">
           <button
             onClick={handleNextWord}
@@ -455,10 +563,14 @@ export const NhaiKanjiVocabHub: React.FC = () => {
           </button>
         </div>
 
-        {/* Tools: JP-VI, Repeat, AutoPlay, Shuffle */}
         <div className="flex items-center gap-2 text-slate-400">
-          <span className="font-bold text-[11px] text-slate-300">⇄ JP → VI</span>
-          <button className="p-1.5 hover:text-white"><RotateCcw className="w-4 h-4" /></button>
+          <button 
+            onClick={() => setFlipDirection(prev => prev === 'JP_VI' ? 'VI_JP' : 'JP_VI')}
+            className="font-bold text-[11px] text-slate-300 hover:text-white flex items-center gap-1"
+          >
+            <span>⇄ {flipDirection === 'JP_VI' ? 'JP → VI' : 'VI → JP'}</span>
+          </button>
+          <button onClick={() => setCurrentWordIndex(0)} className="p-1.5 hover:text-white"><RotateCcw className="w-4 h-4" /></button>
           <button 
             onClick={() => setIsAutoPlaying(!isAutoPlaying)}
             className={`p-1.5 ${isAutoPlaying ? 'text-blue-400' : 'hover:text-white'}`}
@@ -507,7 +619,7 @@ export const NhaiKanjiVocabHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Thuật Ngữ Trong Bài Này (120 từ) - Screenshot 4 */}
+      {/* Thuật Ngữ Trong Bài Này (120 từ thực tế - Screenshot 4) */}
       <div className="space-y-4 pt-4">
         <h4 className="text-sm font-extrabold text-slate-200">
           Thuật ngữ trong bài này ({unitWords.length})
@@ -531,7 +643,7 @@ export const NhaiKanjiVocabHub: React.FC = () => {
                   </div>
                   <div className="space-y-0.5 ml-2">
                     <div className="text-sm font-bold text-slate-300 font-japanese">
-                      {w.reading}
+                      {renderPitchAccent(w.reading, w.pitchAccent)}
                     </div>
                     <div className="text-xs font-bold text-slate-400">
                       {w.hanViet}
@@ -585,6 +697,47 @@ export const NhaiKanjiVocabHub: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Feedback Modal */}
+      {isFeedbackOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-md bg-slate-900 rounded-3xl border border-slate-800 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="font-bold text-sm text-white flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-blue-400" />
+                <span>Góp ý sửa lỗi từ vựng</span>
+              </h3>
+              <button onClick={() => setIsFeedbackOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <textarea
+              rows={4}
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              placeholder="Nhập nội dung đóng góp, sửa lỗi phát âm, chính tả hoặc bản dịch..."
+              className="w-full p-3 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setIsFeedbackOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSendFeedback}
+                className="px-5 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Gửi Góp Ý</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
